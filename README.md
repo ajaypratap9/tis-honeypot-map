@@ -1,49 +1,128 @@
-# Real-Time Cyber Attack Visualization Dashboard 🗺️🔥
+# 🌍 Real-Time Cyber Attack Visualization Dashboard
 
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Elasticsearch](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white)](https://www.elastic.co/)
-[![Leaflet.js](https://img.shields.io/badge/Leaflet.js-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Status: In Progress](https://img.shields.io/badge/Status-In_Progress-orange?style=for-the-badge)]()
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b" width="85%">
+</p>
 
-> A live global attack map that visualizes real-world cyber threats in real-time using a network of honeypots. Watch bots and scanners from around the world attack your fake servers — just like famous Kaspersky/FortiGuard maps! 🌍⚔️
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-Backend-blue?style=for-the-badge">
+  <img src="https://img.shields.io/badge/T--Pot-Honeypots-red?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Elasticsearch-Logs-green?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Leaflet.js-Map-yellow?style=for-the-badge">
+</p>
 
-## Demo / Live Visualization Preview
+---
 
-![Real-Time Cyber Attack Globe Map](https://cdn2.picryl.com/photo/2017/06/03/real-time-cyber-attacks-including-information-on-the-2466dc-1024.jpg)
+## 📌 Problem Statement
 
-![Global Cyber Threat Report Map Example](https://sharevault.com/wp-content/uploads/2025/05/annual-security-report-2025-img-3.jpg)
+Every day, the internet faces millions of automated cyber attacks such as bots and scanners searching for vulnerable systems.  
+Most people and organizations do not have **clear, real-time visibility** into these threats.
 
-![Cyber Attack Visualization Example](https://sharevault.com/wp-content/uploads/2025/05/four-costly-cyber-breaches-that-youve-already-forgotten-about-img-1.png)
+They cannot easily see:
+- How many attacks are happening
+- Where attacks are coming from
+- What type of attacks are most common
 
-![Interactive Threat Map Example](https://threatmap.checkpoint.com/images/threatmap.jpg)
+Most security tools focus mainly on defense. They lack an **intuitive visual representation** of global cyber threats in real time.
 
-*(These are real examples of global cyber attack maps. Your project will create a similar live, animated dashboard — replace with your own screenshots/GIFs when ready!)*
+---
 
-## Project Overview 🚀
+## 💡 Solution Overview
 
-The internet faces millions of automated attacks daily from bots and scanners. This project deploys a multi-honeypot network to attract real attackers, collects logs, and visualizes attacks in real-time on an interactive world map.
+This project builds a **real-time cyber attack visualization dashboard** that displays live attacks on an interactive world map.
 
-**Wow Factor**: Within 24-48 hours of deployment, thousands of real attacks appear live on the map!
+We deploy **honeypots** that behave like real vulnerable servers. Real attackers interact with these systems, and their activities are captured and visualized.
 
-## Key Features ✨
+The dashboard helps users understand global attack patterns and raises cybersecurity awareness.
 
-- **Real-time Global Map** — Interactive world map with animated attack markers and geolocation (Leaflet.js).
-- **Multiple Honeypots** — T-Pot suite (Cowrie for SSH, Dionaea for SMB, etc.) — 20+ simulated services.
-- **Data Storage** — Elasticsearch for efficient log management.
-- **Extra Features**:
-  - Leaderboard of top attacking countries
-  - Sound alerts for new attacks
-  - Basic ML attack classification (scikit-learn)
-- **Live Stats** — Attack count, types, timestamps, tried usernames/passwords.
+---
 
-## Architecture Diagram
+## ⚙️ How the System Works
+
+1. **Honeypots Deployment**
+   - Uses **T-Pot**, an open-source honeypot platform.
+   - Simulates common services like SSH and SMB.
+   - Deployed on **Oracle Cloud Free Tier**.
+
+2. **Attack Data Collection**
+   - Real attackers interact with the honeypots.
+   - All attack attempts are logged automatically.
+
+3. **Log Storage**
+   - Logs are stored in **Elasticsearch** for fast querying.
+
+4. **Live Visualization**
+   - Web dashboard built using **Flask** and **Leaflet.js**.
+   - Shows animated attack markers on a live world map.
+
+5. **Analysis & Alerts**
+   - Displays top attacking countries and attack statistics.
+   - Sound alerts for new attacks.
+   - Basic machine learning classifies attack types.
+
+---
+
+## 🖥️ Live Dashboard Inspiration
+
+<p align="center">
+  <img src="https://cybermap.kaspersky.com/assets/img/share.jpg" width="45%">
+  <img src="https://threatmap.fortiguard.com/img/map.png" width="45%">
+</p>
+
+<p align="center">
+  <img src="https://www.checkpoint.com/wp-content/uploads/threatcloud-map.jpg" width="70%">
+</p>
+
+> *Images shown above are for inspiration only.  
+The actual dashboard will generate live attack data from deployed honeypots.*
+
+---
+
+## 🚀 Key Features
+
+- 🌍 Live global cyber attack map
+- 🔴 Animated real-time attack markers
+- 📊 Live attack statistics and leaderboards
+- 🔔 Sound alerts for new attacks
+- 🧠 Basic AI-based attack classification
+- 🗂️ Centralized log management
+- 🧪 Safe and isolated research environment
+
+---
+
+## 🧰 Technology Stack
+
+### Backend
+- Python
+- Flask
+- Elasticsearch
+- Docker
+- T-Pot Honeypot Suite
+
+### Frontend
+- HTML5
+- CSS
+- JavaScript
+- Leaflet.js
+
+### Machine Learning
+- Scikit-learn
+
+---
+
+## 🧱 System Architecture
 
 ```mermaid
 graph TD
-    A[Internet Attackers] --> B[Honeypots (T-Pot Suite)]
-    B --> C[Log Collection]
-    C --> D[Elasticsearch]
-    D --> E[Web Dashboard (Flask/Node.js + Leaflet.js)]
-    E --> F[Live World Map Visualization]
+    A[Internet Attackers]
+    B[T-Pot Honeypots]
+    C[Log Collection]
+    D[Elasticsearch]
+    E[Flask Backend]
+    F[Web Dashboard - Leaflet.js]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
