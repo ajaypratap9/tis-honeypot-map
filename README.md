@@ -1,10 +1,6 @@
 # 🌍 Real-Time Cyber Attack Visualization Dashboard
 
-<p align="center">
-  <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b" width="85%">
-</p>
-
-<p align="center">
+<p>
   <img src="https://img.shields.io/badge/Python-Backend-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/T--Pot-Honeypots-red?style=for-the-badge">
   <img src="https://img.shields.io/badge/Elasticsearch-Logs-green?style=for-the-badge">
@@ -65,11 +61,6 @@ The dashboard helps users understand global attack patterns and raises cybersecu
 ## 🖥️ Live Dashboard Inspiration
 
 <p align="center">
-  <img src="https://cybermap.kaspersky.com/assets/img/share.jpg" width="45%">
-  <img src="https://threatmap.fortiguard.com/img/map.png" width="45%">
-</p>
-
-<p align="center">
   <img src="https://www.checkpoint.com/wp-content/uploads/threatcloud-map.jpg" width="70%">
 </p>
 
@@ -80,13 +71,13 @@ The actual dashboard will generate live attack data from deployed honeypots.*
 
 ## 🚀 Key Features
 
-- 🌍 Live global cyber attack map
-- 🔴 Animated real-time attack markers
-- 📊 Live attack statistics and leaderboards
-- 🔔 Sound alerts for new attacks
-- 🧠 Basic AI-based attack classification
-- 🗂️ Centralized log management
-- 🧪 Safe and isolated research environment
+- Live global cyber attack map
+- Animated real-time attack markers
+- Live attack statistics and leaderboards
+- Sound alerts for new attacks
+- Basic AI-based attack classification
+- Centralized log management
+- Safe and isolated research environment
 
 ---
 
