@@ -11,12 +11,15 @@
 
 ## Demo / Live Visualization Preview
 
-![Kaspersky Cyber Threat Map](https://cybermap.kaspersky.com/assets/img/share.jpg)
-![FortiGuard Threat Map](https://threatmap.fortiguard.com/img/map.png)
-![Digital Attack Map Example](https://www.digitalattackmap.com/img/digital-attack-map-gallery-1.jpg)
-![Check Point ThreatCloud Map](https://threatmap.checkpoint.com/images/threatmap.jpg)
+![Real-Time Cyber Attack Globe Map](https://cdn2.picryl.com/photo/2017/06/03/real-time-cyber-attacks-including-information-on-the-2466dc-1024.jpg)
 
-*(These are examples of real global attack maps. Your project will generate a similar live dashboard — replace with your own screenshots/GIFs later!)*
+![Global Cyber Threat Report Map Example](https://sharevault.com/wp-content/uploads/2025/05/annual-security-report-2025-img-3.jpg)
+
+![Cyber Attack Visualization Example](https://sharevault.com/wp-content/uploads/2025/05/four-costly-cyber-breaches-that-youve-already-forgotten-about-img-1.png)
+
+![Interactive Threat Map Example](https://threatmap.checkpoint.com/images/threatmap.jpg)
+
+*(These are real examples of global cyber attack maps. Your project will create a similar live, animated dashboard — replace with your own screenshots/GIFs when ready!)*
 
 ## Project Overview 🚀
 
@@ -39,8 +42,8 @@ The internet faces millions of automated attacks daily from bots and scanners. T
 
 ```mermaid
 graph TD
-    A[Internet Attackers] --> B[Honeypots<br>(T-Pot Suite)]
+    A[Internet Attackers] --> B[Honeypots (T-Pot Suite)]
     B --> C[Log Collection]
     C --> D[Elasticsearch]
-    D --> E[Web Dashboard<br>(Flask/Node.js + Leaflet.js)]
+    D --> E[Web Dashboard (Flask/Node.js + Leaflet.js)]
     E --> F[Live World Map Visualization]
