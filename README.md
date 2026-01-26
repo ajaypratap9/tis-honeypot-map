@@ -7,41 +7,40 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Status: In Progress](https://img.shields.io/badge/Status-In_Progress-orange?style=for-the-badge)]()
 
-> A live global attack map that visualizes real-world cyber threats in real-time using a network of honeypots. Watch bots and scanners from around the world attack your fake servers — just like Kaspersky/Norse maps! 🌍⚔️
+> A live global attack map that visualizes real-world cyber threats in real-time using a network of honeypots. Watch bots and scanners from around the world attack your fake servers — just like famous Kaspersky/FortiGuard maps! 🌍⚔️
 
 ## Demo / Live Visualization Preview
 
-![Global Cyber Attack Map Example 1](https://sharevault.com/wp-content/uploads/2025/05/global-threat-report-2024-img-5.jpg)
-![Global Cyber Attack Map Example 2](https://sharevault.com/wp-content/uploads/2025/05/global-threat-report-2024-img-1.jpg)
-![Global Cyber Attack Map Example 3](https://sharevault.com/wp-content/uploads/2025/05/2024-cyber-attack-breakdown-critical-incidents-and-security-tips-img-1.jpg)
+![Kaspersky Cyber Threat Map](https://cybermap.kaspersky.com/assets/img/share.jpg)
+![FortiGuard Threat Map](https://threatmap.fortiguard.com/img/map.png)
+![Digital Attack Map Example](https://www.digitalattackmap.com/img/digital-attack-map-gallery-1.jpg)
+![Check Point ThreatCloud Map](https://threatmap.checkpoint.com/images/threatmap.jpg)
 
-*(Yeh sample images hain real attack maps ki — tumhare project mein live hone ke baad apne screenshots/GIF replace kar dena!)*
+*(These are examples of real global attack maps. Your project will generate a similar live dashboard — replace with your own screenshots/GIFs later!)*
 
 ## Project Overview 🚀
 
-Internet pe har din millions automated attacks hote hain — bots, scanners, brute-force attempts. Yeh project ek **multi-honeypot network** deploy karta hai jo real attackers ko attract karta hai, unke logs collect karta hai, aur ek interactive world map pe real-time visualize karta hai.
+The internet faces millions of automated attacks daily from bots and scanners. This project deploys a multi-honeypot network to attract real attackers, collects logs, and visualizes attacks in real-time on an interactive world map.
 
-**Mind-blowing part**: Deploy karte hi 24-48 hours mein thousands attacks aayenge (China, Russia, US se bots), aur map pe live red dots/animations dikhegi!
+**Wow Factor**: Within 24-48 hours of deployment, thousands of real attacks appear live on the map!
 
 ## Key Features ✨
 
-- **Real-time Global Map** → Leaflet.js pe interactive world map with attack animations, geolocation, aur attacker IP markers.
-- **Multiple Honeypots** → T-Pot suite (Cowrie for SSH, Dionaea for SMB, etc.) — 20+ fake services.
-- **Data Collection** → Elasticsearch + Kibana for logging and basic dashboards.
-- **Extra Wow Factors**:
-  - Top attacking countries leaderboard
-  - Sound alerts on new attacks
+- **Real-time Global Map** — Interactive world map with animated attack markers and geolocation (Leaflet.js).
+- **Multiple Honeypots** — T-Pot suite (Cowrie for SSH, Dionaea for SMB, etc.) — 20+ simulated services.
+- **Data Storage** — Elasticsearch for efficient log management.
+- **Extra Features**:
+  - Leaderboard of top attacking countries
+  - Sound alerts for new attacks
   - Basic ML attack classification (scikit-learn)
-- **Live Stats** → Attack count, types, timestamps, usernames/passwords tried.
+- **Live Stats** — Attack count, types, timestamps, tried usernames/passwords.
 
 ## Architecture Diagram
 
-(Coming soon — add a diagram here using draw.io or Mermaid)
-
 ```mermaid
 graph TD
-    A[Internet Attackers] --> B[Honeypots (T-Pot)]
+    A[Internet Attackers] --> B[Honeypots<br>(T-Pot Suite)]
     B --> C[Log Collection]
     C --> D[Elasticsearch]
-    D --> E[Web Dashboard (Flask/Node.js + Leaflet.js)]
+    D --> E[Web Dashboard<br>(Flask/Node.js + Leaflet.js)]
     E --> F[Live World Map Visualization]
