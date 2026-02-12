@@ -1,119 +1,76 @@
-# 🌍 Real-Time Cyber Attack Visualization Dashboard
+<!-- ========================================================= -->
+<!--                 GLOBAL CYBER ATTACK MAP                   -->
+<!-- ========================================================= -->
 
-<p>
-  <img src="https://img.shields.io/badge/Python-Backend-blue?style=for-the-badge">
-  <img src="https://img.shields.io/badge/T--Pot-Honeypots-red?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Elasticsearch-Logs-green?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Leaflet.js-Map-yellow?style=for-the-badge">
-</p>
 
----
 
-## 📌 Problem Statement
-
-Every day, the internet faces millions of automated cyber attacks such as bots and scanners searching for vulnerable systems.  
-Most people and organizations do not have **clear, real-time visibility** into these threats.
-
-They cannot easily see:
-- How many attacks are happening
-- Where attacks are coming from
-- What type of attacks are most common
-
-Most security tools focus mainly on defense. They lack an **intuitive visual representation** of global cyber threats in real time.
-
----
-
-## 💡 Solution Overview
-
-This project builds a **real-time cyber attack visualization dashboard** that displays live attacks on an interactive world map.
-
-We deploy **honeypots** that behave like real vulnerable servers. Real attackers interact with these systems, and their activities are captured and visualized.
-
-The dashboard helps users understand global attack patterns and raises cybersecurity awareness.
-
----
-
-## ⚙️ How the System Works
-
-1. **Honeypots Deployment**
-   - Uses **T-Pot**, an open-source honeypot platform.
-   - Simulates common services like SSH and SMB.
-   - Deployed on **Oracle Cloud Free Tier**.
-
-2. **Attack Data Collection**
-   - Real attackers interact with the honeypots.
-   - All attack attempts are logged automatically.
-
-3. **Log Storage**
-   - Logs are stored in **Elasticsearch** for fast querying.
-
-4. **Live Visualization**
-   - Web dashboard built using **Flask** and **Leaflet.js**.
-   - Shows animated attack markers on a live world map.
-
-5. **Analysis & Alerts**
-   - Displays top attacking countries and attack statistics.
-   - Sound alerts for new attacks.
-   - Basic machine learning classifies attack types.
-
----
-
-## 🖥️ Live Dashboard Inspiration
+<h1 align="center">🌍 Global Cyber Attack Visualization Platform</h1>
 
 <p align="center">
-  <img src="https://www.checkpoint.com/wp-content/uploads/threatcloud-map.jpg" width="70%">
+  Real-Time Cyber Threat Intelligence Dashboard Powered by Live Honeypot Data
 </p>
 
-> *Images shown above are for inspiration only.  
-The actual dashboard will generate live attack data from deployed honeypots.*
+<p align="center">
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Honeypot-T--Pot-red?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Frontend-MapLibre-blue?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Security-Hardened-critical?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Deployment-Vercel-black?style=for-the-badge&logo=vercel"/>
+</p>
 
 ---
 
-## 🚀 Key Features
+# 📖 Project Overview
 
-- Live global cyber attack map
-- Animated real-time attack markers
-- Live attack statistics and leaderboards
-- Sound alerts for new attacks
-- Basic AI-based attack classification
-- Centralized log management
-- Safe and isolated research environment
+The modern internet is continuously targeted by automated scanners, brute-force tools, and malicious actors. Within minutes of connecting a system to the internet, it begins receiving probing traffic.
 
----
+This project presents a **real-time global cyber attack visualization system** that:
 
-## 🧰 Technology Stack
-
-### Backend
-- Python
-- Flask
-- Elasticsearch
-- Docker
-- T-Pot Honeypot Suite
-
-### Frontend
-- HTML5
-- CSS
-- JavaScript
-- Leaflet.js
-
-### Machine Learning
-- Scikit-learn
+- Captures live attack telemetry using a honeypot
+- Streams structured event data securely
+- Visualizes global attacks on an animated interactive map
+- Provides immersive, real-time threat awareness
 
 ---
 
-## 🧱 System Architecture
+# 🖼 Dashboard Preview
+
+<img width="1296" height="922" alt="image" src="https://github.com/user-attachments/assets/6a88dc0f-ec03-41b4-bcfe-bf173de3c98d" />
+
+
+---
+
+# 🎯 Problem Statement
+
+Traditional cybersecurity tools:
+
+- Display raw logs without intuitive visualization
+- Lack real-time geographic threat mapping
+- Are limited to enterprise security teams
+- Do not provide interactive threat awareness dashboards
+
+There is a need for a system that makes global attack data:
+
+- 🌍 Visually understandable  
+- ⚡ Real-time  
+- 📊 Interactive  
+- 🔐 Secure  
+
+---
+
+# 💡 Solution Architecture
 
 ```mermaid
-graph TD
-    A[Internet Attackers]
-    B[T-Pot Honeypots]
-    C[Log Collection]
-    D[Elasticsearch]
-    E[Flask Backend]
-    F[Web Dashboard - Leaflet.js]
+flowchart LR
+    A[Internet Attackers] --> B[T-Pot Honeypot VM]
+    B --> C[Logstash Processing Layer]
+    C --> D[Node.js Secure Backend]
+    D --> E[Cloudflare Tunnel]
+    E --> F[Frontend Visualization Interface]
 
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
+    style A fill:#111111,stroke:#ff0040,stroke-width:2px,color:#ffffff
+    style B fill:#111111,stroke:#00ffff,stroke-width:2px,color:#ffffff
+    style C fill:#111111,stroke:#00ffff,stroke-width:2px,color:#ffffff
+    style D fill:#111111,stroke:#00ff99,stroke-width:2px,color:#ffffff
+    style E fill:#111111,stroke:#ffaa00,stroke-width:2px,color:#ffffff
+    style F fill:#111111,stroke:#ff00ff,stroke-width:2px,color:#ffffff
