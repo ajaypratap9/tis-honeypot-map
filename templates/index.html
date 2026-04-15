@@ -1,1 +1,1185 @@
-<!-- write code here  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberWatch — Live Threat Intelligence</title>
+
+<!-- Leaflet Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Socket.IO -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════ */
+:root {
+  --bg-base:     #080b0f;
+  --bg-panel:    #0d1117;
+  --bg-card:     #111720;
+  --bg-hover:    #161d29;
+  --border:      #1e2d3d;
+  --border-glow: #1e3a5f;
+
+  --txt-primary:   #e6edf3;
+  --txt-secondary: #7d8fa1;
+  --txt-muted:     #3d5068;
+
+  --accent:      #00d4ff;
+  --accent-dim:  #005f7a;
+  --red:         #ff4d6a;
+  --orange:      #ff8c42;
+  --yellow:      #ffd60a;
+  --green:       #39d353;
+  --purple:      #bf7fff;
+
+  --severity-critical: #ff1744;
+  --severity-high:     #ff6d00;
+  --severity-medium:   #ffd600;
+  --severity-low:      #00e676;
+
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --radius: 6px;
+  --transition: 0.18s ease;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--txt-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+.shell {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════ */
+.topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-icon::before {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse-icon 2s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(0.7); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 8px var(--accent); }
+}
+
+.logo-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--txt-primary);
+  letter-spacing: 0.04em;
+}
+
+.logo-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.topbar-center {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-pill-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--txt-primary);
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.stat-pill-val.flash {
+  color: var(--accent);
+}
+
+.stat-pill-label {
+  font-size: 9px;
+  color: var(--txt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(57, 211, 83, 0.08);
+  border: 1px solid rgba(57, 211, 83, 0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(57, 211, 83, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(57, 211, 83, 0); }
+}
+
+.uptime-display {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt-muted);
+}
+
+/* Sound toggle */
+.sound-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--txt-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+.sound-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sound-btn.on { border-color: var(--accent); color: var(--accent); }
+
+/* ═══════════════════════════════════════
+   LEFT PANEL
+═══════════════════════════════════════ */
+.panel-left {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-right {
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-section {
+  flex-shrink: 0;
+}
+
+.panel-header {
+  padding: 12px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--txt-muted);
+}
+
+.panel-count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   COUNTRY LEADERBOARD
+═══════════════════════════════════════ */
+.leaderboard {
+  padding: 8px 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.country-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  transition: background var(--transition);
+  cursor: default;
+}
+
+.country-row:hover { background: var(--bg-hover); }
+
+.country-rank {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt-muted);
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.country-flag {
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.country-name {
+  font-size: 12px;
+  color: var(--txt-primary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.country-bar-wrap {
+  width: 52px;
+  height: 3px;
+  background: var(--bg-hover);
+  border-radius: 2px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.country-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.country-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt-secondary);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   ATTACK TYPE DONUT
+═══════════════════════════════════════ */
+.attack-types-section {
+  border-top: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.type-list {
+  padding: 6px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 16px;
+  transition: background var(--transition);
+}
+
+.type-row:hover { background: var(--bg-hover); }
+
+.type-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.type-name {
+  font-size: 11px;
+  color: var(--txt-secondary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.type-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt-muted);
+}
+
+/* ═══════════════════════════════════════
+   MAP AREA
+═══════════════════════════════════════ */
+.map-area {
+  position: relative;
+  overflow: hidden;
+  background: #040810;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Leaflet tile darkening */
+.leaflet-tile { filter: brightness(0.3) saturate(0.4) hue-rotate(180deg); }
+
+.leaflet-container {
+  background: #040810 !important;
+}
+
+/* Remove Leaflet default focus outline */
+.leaflet-interactive:focus { outline: none; }
+
+/* Canvas for attack arcs */
+#arc-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 400;
+}
+
+/* Scan line overlay */
+.scanline {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 212, 255, 0.008) 2px,
+    rgba(0, 212, 255, 0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 500;
+}
+
+/* Corner decorations */
+.corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  z-index: 500;
+  pointer-events: none;
+}
+.corner-tl { top: 8px; left: 8px; border-top: 1.5px solid var(--accent); border-left: 1.5px solid var(--accent); }
+.corner-tr { top: 8px; right: 8px; border-top: 1.5px solid var(--accent); border-right: 1.5px solid var(--accent); }
+.corner-bl { bottom: 8px; left: 8px; border-bottom: 1.5px solid var(--accent); border-left: 1.5px solid var(--accent); }
+.corner-br { bottom: 8px; right: 8px; border-bottom: 1.5px solid var(--accent); border-right: 1.5px solid var(--accent); }
+
+/* Attack counter floating badge */
+.map-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8, 11, 15, 0.85);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 6px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--txt-secondary);
+  z-index: 500;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.map-badge span { color: var(--accent); font-weight: 600; }
+
+/* ═══════════════════════════════════════
+   RIGHT PANEL — ATTACK FEED
+═══════════════════════════════════════ */
+.feed-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.feed-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.5);
+  cursor: default;
+  transition: background var(--transition);
+  animation: feed-in 0.3s ease;
+}
+
+@keyframes feed-in {
+  from { opacity: 0; transform: translateX(8px); background: rgba(0, 212, 255, 0.05); }
+  to   { opacity: 1; transform: translateX(0); background: transparent; }
+}
+
+.feed-item:hover { background: var(--bg-hover); }
+
+.feed-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.feed-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-primary);
+}
+
+.severity-badge {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.sev-CRITICAL { background: rgba(255, 23, 68, 0.15);  color: var(--severity-critical); border: 1px solid rgba(255, 23, 68, 0.3); }
+.sev-HIGH     { background: rgba(255, 109, 0, 0.12);  color: var(--severity-high);     border: 1px solid rgba(255, 109, 0, 0.25); }
+.sev-MEDIUM   { background: rgba(255, 214, 0, 0.1);   color: var(--severity-medium);   border: 1px solid rgba(255, 214, 0, 0.25); }
+.sev-LOW      { background: rgba(0, 230, 118, 0.08);  color: var(--severity-low);      border: 1px solid rgba(0, 230, 118, 0.2); }
+
+.feed-row2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.feed-ip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.feed-arrow {
+  font-size: 9px;
+  color: var(--txt-muted);
+}
+
+.feed-port {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--txt-muted);
+}
+
+.feed-row3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feed-country {
+  font-size: 10px;
+  color: var(--txt-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.feed-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--txt-muted);
+}
+
+.feed-payload {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--txt-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 3px;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 3px;
+  border-left: 2px solid var(--border);
+}
+
+/* ═══════════════════════════════════════
+   HONEYPOT STATS (right bottom)
+═══════════════════════════════════════ */
+.honeypot-section {
+  border-top: 1px solid var(--border);
+  padding: 12px 14px;
+  flex-shrink: 0;
+}
+
+.honeypot-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--txt-muted);
+  margin-bottom: 10px;
+}
+
+.honeypot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.hp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  transition: border-color var(--transition);
+}
+
+.hp-card:hover { border-color: var(--border-glow); }
+
+.hp-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--txt-muted);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hp-count {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--txt-primary);
+  line-height: 1;
+}
+
+.hp-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.hp-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+.hp-status-text {
+  font-size: 9px;
+  color: var(--green);
+}
+
+/* ═══════════════════════════════════════
+   LEAFLET CUSTOM MARKERS
+═══════════════════════════════════════ */
+.attack-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  animation: marker-pulse 1s ease-out forwards;
+}
+
+@keyframes marker-pulse {
+  0%   { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.target-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toast notification */
+#toast {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--txt-primary);
+  backdrop-filter: blur(8px);
+  animation: toast-in 0.25s ease, toast-out 0.3s ease 2.7s forwards;
+  max-width: 280px;
+}
+
+@keyframes toast-in  { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+
+.toast-sev-CRITICAL { border-left-color: var(--severity-critical); }
+.toast-sev-HIGH     { border-left-color: var(--severity-high); }
+
+/* Attribution hide */
+.leaflet-control-attribution { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <div>
+        <div class="logo-text">CyberWatch</div>
+        <div class="logo-sub">Threat Intelligence</div>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="stat-pill">
+        <div class="stat-pill-val" id="total-count">0</div>
+        <div class="stat-pill-label">Total Attacks</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-val" id="per-minute">0</div>
+        <div class="stat-pill-label">Attacks / min</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-val" id="unique-countries">0</div>
+        <div class="stat-pill-label">Countries</div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="uptime-display">
+        UPTIME <span id="uptime" style="color:var(--txt-secondary); font-family: var(--font-mono)">00:00:00</span>
+      </div>
+      <button class="sound-btn" id="sound-btn" title="Toggle sound alerts">🔇</button>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- LEFT PANEL -->
+    <aside class="panel-left">
+      <div class="panel-section">
+        <div class="panel-header">
+          <span class="panel-title">Top Attacker Countries</span>
+          <span class="panel-count" id="lb-count">—</span>
+        </div>
+        <div class="leaderboard" id="leaderboard"></div>
+      </div>
+
+      <div class="attack-types-section panel-section">
+        <div class="panel-header">
+          <span class="panel-title">Attack Types</span>
+        </div>
+        <div class="type-list" id="type-list"></div>
+      </div>
+    </aside>
+
+    <!-- MAP -->
+    <div class="map-area">
+      <div id="map"></div>
+      <canvas id="arc-canvas"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <div class="map-badge">
+        Honeypot: <span>Paris, FR</span> &nbsp;·&nbsp; Attacks intercepted: <span id="map-total">0</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <aside class="panel-right">
+      <div class="panel-header">
+        <span class="panel-title">Live Attack Feed</span>
+        <span class="panel-count" id="feed-count">0</span>
+      </div>
+      <div class="feed-scroll" id="feed"></div>
+
+      <div class="honeypot-section">
+        <div class="honeypot-title">Honeypot Services</div>
+        <div class="honeypot-grid" id="hp-grid"></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// INIT MAP
+// ═══════════════════════════════════════
+const map = L.map('map', {
+  center: [20, 10],
+  zoom: 2,
+  zoomControl: false,
+  attributionControl: false,
+  scrollWheelZoom: true,
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 8, minZoom: 1,
+  opacity: 1,
+}).addTo(map);
+
+// Target marker (Paris honeypot)
+const targetIcon = L.divIcon({
+  html: `<svg width="22" height="22" viewBox="0 0 22 22">
+    <circle cx="11" cy="11" r="9" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.6"/>
+    <circle cx="11" cy="11" r="5" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.8"/>
+    <circle cx="11" cy="11" r="2" fill="#00d4ff"/>
+  </svg>`,
+  className: 'target-marker',
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
+L.marker([48.85, 2.35], { icon: targetIcon }).addTo(map)
+  .bindTooltip('🎯 Honeypot Server — Paris, FR', { permanent: false, className: 'leaflet-tooltip' });
+
+// ═══════════════════════════════════════
+// ARC ANIMATION ENGINE
+// ═══════════════════════════════════════
+const canvas = document.getElementById('arc-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const mapEl = document.querySelector('.map-area');
+  canvas.width = mapEl.offsetWidth;
+  canvas.height = mapEl.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const activeArcs = [];
+
+function latLonToPixel(lat, lon) {
+  const pt = map.latLngToContainerPoint(L.latLng(lat, lon));
+  return { x: pt.x, y: pt.y };
+}
+
+function addArc(attack) {
+  const src = latLonToPixel(attack.src_lat, attack.src_lon);
+  const dst = latLonToPixel(attack.dst_lat, attack.dst_lon);
+  activeArcs.push({
+    sx: src.x, sy: src.y,
+    dx: dst.x, dy: dst.y,
+    color: attack.color || '#00d4ff',
+    progress: 0,
+    speed: 0.018 + Math.random() * 0.012,
+    alpha: 1,
+    lat1: attack.src_lat, lon1: attack.src_lon,
+    lat2: attack.dst_lat, lon2: attack.dst_lon,
+    id: attack.id,
+  });
+  if (activeArcs.length > 60) activeArcs.shift();
+}
+
+function drawArcs() {
+  const mapEl = document.querySelector('.map-area');
+  canvas.width = mapEl.offsetWidth;
+  canvas.height = mapEl.offsetHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = activeArcs.length - 1; i >= 0; i--) {
+    const arc = activeArcs[i];
+
+    // Recalculate pixel positions (map might have moved)
+    const src = latLonToPixel(arc.lat1, arc.lon1);
+    const dst = latLonToPixel(arc.lat2, arc.lon2);
+    arc.sx = src.x; arc.sy = src.y;
+    arc.dx = dst.x; arc.dy = dst.y;
+
+    // Control point (arc height)
+    const mx = (arc.sx + arc.dx) / 2;
+    const my = (arc.sy + arc.dy) / 2;
+    const dist = Math.hypot(arc.dx - arc.sx, arc.dy - arc.sy);
+    const cpx = mx;
+    const cpy = my - dist * 0.35;
+
+    // Draw arc trail
+    const t = arc.progress;
+    ctx.beginPath();
+    ctx.moveTo(arc.sx, arc.sy);
+    // Draw bezier up to progress point
+    for (let step = 0; step <= t; step += 0.02) {
+      const bx = Math.pow(1-step,2)*arc.sx + 2*(1-step)*step*cpx + Math.pow(step,2)*arc.dx;
+      const by = Math.pow(1-step,2)*arc.sy + 2*(1-step)*step*cpy + Math.pow(step,2)*arc.dy;
+      ctx.lineTo(bx, by);
+    }
+
+    const fadeAlpha = arc.progress > 0.7 ? (1 - (arc.progress - 0.7) / 0.3) : 1;
+    ctx.strokeStyle = hexToRgba(arc.color, 0.65 * fadeAlpha);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Head dot
+    const headX = Math.pow(1-t,2)*arc.sx + 2*(1-t)*t*cpx + Math.pow(t,2)*arc.dx;
+    const headY = Math.pow(1-t,2)*arc.sy + 2*(1-t)*t*cpy + Math.pow(t,2)*arc.dy;
+    ctx.beginPath();
+    ctx.arc(headX, headY, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = hexToRgba(arc.color, fadeAlpha);
+    ctx.fill();
+
+    arc.progress += arc.speed;
+    if (arc.progress >= 1) {
+      // Impact flash at target
+      drawImpact(arc.dx, arc.dy, arc.color);
+      activeArcs.splice(i, 1);
+    }
+  }
+
+  requestAnimationFrame(drawArcs);
+}
+drawArcs();
+
+function drawImpact(x, y, color) {
+  let r = 3, alpha = 1;
+  function frame() {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = hexToRgba(color, alpha);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    r += 1.5; alpha -= 0.07;
+    if (alpha > 0) requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ═══════════════════════════════════════
+// SOUND ENGINE
+// ═══════════════════════════════════════
+let soundOn = false;
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+document.getElementById('sound-btn').addEventListener('click', () => {
+  soundOn = !soundOn;
+  const btn = document.getElementById('sound-btn');
+  btn.textContent = soundOn ? '🔔' : '🔇';
+  btn.classList.toggle('on', soundOn);
+  if (soundOn && !audioCtx) audioCtx = new AudioCtx();
+});
+
+function playAttackSound(severity) {
+  if (!soundOn || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  const freqMap = { CRITICAL: 880, HIGH: 660, MEDIUM: 440, LOW: 330 };
+  osc.frequency.value = freqMap[severity] || 440;
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+  osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+}
+
+// ═══════════════════════════════════════
+// FEED RENDERING
+// ═══════════════════════════════════════
+const feed = document.getElementById('feed');
+let feedCount = 0;
+const FLAG_MAP = {
+  CN:'🇨🇳', RU:'🇷🇺', US:'🇺🇸', NL:'🇳🇱', DE:'🇩🇪',
+  BR:'🇧🇷', IN:'🇮🇳', KR:'🇰🇷', FR:'🇫🇷', VN:'🇻🇳',
+  IR:'🇮🇷', UA:'🇺🇦', TR:'🇹🇷', ID:'🇮🇩', TW:'🇹🇼',
+};
+
+function timeAgo(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  if (diff < 5000)  return 'just now';
+  if (diff < 60000) return `${Math.floor(diff/1000)}s ago`;
+  return `${Math.floor(diff/60000)}m ago`;
+}
+
+function addFeedItem(atk) {
+  feedCount++;
+  document.getElementById('feed-count').textContent = feedCount;
+
+  const el = document.createElement('div');
+  el.className = 'feed-item';
+  const flag = FLAG_MAP[atk.src_cc] || '🌐';
+  el.innerHTML = `
+    <div class="feed-row1">
+      <span class="feed-type">${atk.attack_type}</span>
+      <span class="severity-badge sev-${atk.severity}">${atk.severity}</span>
+    </div>
+    <div class="feed-row2">
+      <span class="feed-ip">${atk.src_ip}</span>
+      <span class="feed-arrow">→</span>
+      <span class="feed-port">:${atk.dst_port}/${atk.protocol}</span>
+    </div>
+    <div class="feed-row3">
+      <span class="feed-country">${flag} ${atk.src_country}</span>
+      <span class="feed-time">${timeAgo(atk.timestamp)}</span>
+    </div>
+    <div class="feed-payload">${escapeHtml(atk.payload)}</div>
+  `;
+
+  feed.insertBefore(el, feed.firstChild);
+  // Keep max 80 items
+  while (feed.children.length > 80) feed.removeChild(feed.lastChild);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════
+// LEADERBOARD RENDERING
+// ═══════════════════════════════════════
+function updateLeaderboard(countries) {
+  const lb = document.getElementById('leaderboard');
+  const max = countries.length > 0 ? countries[0].count : 1;
+  document.getElementById('lb-count').textContent = countries.length;
+  document.getElementById('unique-countries').textContent = countries.length;
+
+  lb.innerHTML = countries.map((c, i) => {
+    const flag = getFlagEmoji(c.country);
+    const pct = Math.round((c.count / max) * 100);
+    return `<div class="country-row">
+      <span class="country-rank">${i+1}</span>
+      <span class="country-flag">${flag}</span>
+      <span class="country-name">${c.country}</span>
+      <div class="country-bar-wrap"><div class="country-bar" style="width:${pct}%"></div></div>
+      <span class="country-count">${c.count}</span>
+    </div>`;
+  }).join('');
+}
+
+function updateTypeList(types) {
+  const typeColors = {
+    'SSH Brute Force': '#ff4444',
+    'Telnet Brute Force': '#ff6644',
+    'SQL Injection': '#ff0066',
+    'HTTP Directory Scan': '#ffaa00',
+    'HTTPS Scan': '#ffcc00',
+    'RDP Brute Force': '#cc00ff',
+    'SMB Exploit': '#ff0033',
+    'FTP Brute Force': '#ff8800',
+    'DNS Amplification': '#00ccff',
+    'SMTP Relay Attempt': '#00aaff',
+    'Redis Exploit': '#ff3399',
+    'Memcached Abuse': '#33ccff',
+    'VNC Brute Force': '#aa44ff',
+    'MQTT Intrusion': '#44ffaa',
+  };
+
+  const list = document.getElementById('type-list');
+  list.innerHTML = types.map(t => `
+    <div class="type-row">
+      <div class="type-dot" style="background:${typeColors[t.type] || '#7d8fa1'}"></div>
+      <span class="type-name">${t.type}</span>
+      <span class="type-count">${t.count}</span>
+    </div>
+  `).join('');
+}
+
+// Honeypot service tracker
+const hpCounts = { Cowrie: 0, Dionaea: 0, Glastopf: 0, Honeytrap: 0 };
+const hpDescriptions = {
+  Cowrie: 'SSH/Telnet',
+  Dionaea: 'SMB/SQL/FTP',
+  Glastopf: 'HTTP/HTTPS',
+  Honeytrap: 'Multi-port',
+};
+
+function updateHoneypotGrid() {
+  const grid = document.getElementById('hp-grid');
+  grid.innerHTML = Object.entries(hpCounts).map(([name, count]) => `
+    <div class="hp-card">
+      <div class="hp-name">${name}</div>
+      <div class="hp-count">${count.toLocaleString()}</div>
+      <div class="hp-status"><div class="hp-dot"></div><span class="hp-status-text">${hpDescriptions[name]}</span></div>
+    </div>
+  `).join('');
+}
+updateHoneypotGrid();
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(atk) {
+  if (atk.severity !== 'CRITICAL' && atk.severity !== 'HIGH') return;
+  const toast = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-item toast-sev-${atk.severity}`;
+  el.innerHTML = `<strong>${atk.attack_type}</strong> from ${atk.src_country}`;
+  toast.appendChild(el);
+  setTimeout(() => el.remove(), 3100);
+  if (toast.children.length > 4) toast.removeChild(toast.firstChild);
+}
+
+// ═══════════════════════════════════════
+// SOCKET.IO CONNECTION
+// ═══════════════════════════════════════
+const socket = io();
+
+socket.on('attack', (atk) => {
+  addArc(atk);
+  addFeedItem(atk);
+  playAttackSound(atk.severity);
+  showToast(atk);
+
+  // Update honeypot counts
+  if (hpCounts.hasOwnProperty(atk.honeypot)) {
+    hpCounts[atk.honeypot]++;
+    updateHoneypotGrid();
+  }
+
+  // Flash total counter
+  const tc = document.getElementById('total-count');
+  tc.classList.add('flash');
+  setTimeout(() => tc.classList.remove('flash'), 300);
+
+  document.getElementById('map-total').textContent = parseInt(document.getElementById('map-total').textContent || '0') + 1;
+});
+
+socket.on('stats', (stats) => {
+  document.getElementById('total-count').textContent = stats.total.toLocaleString();
+  document.getElementById('per-minute').textContent = stats.per_minute;
+  document.getElementById('uptime').textContent = stats.uptime;
+  updateLeaderboard(stats.top_countries);
+  updateTypeList(stats.top_types);
+});
+
+// ═══════════════════════════════════════
+// LOAD INITIAL DATA
+// ═══════════════════════════════════════
+fetch('/api/recent').then(r => r.json()).then(attacks => {
+  attacks.reverse().forEach(a => {
+    addFeedItem(a);
+    if (hpCounts.hasOwnProperty(a.honeypot)) hpCounts[a.honeypot]++;
+  });
+  updateHoneypotGrid();
+});
+
+// ═══════════════════════════════════════
+// COUNTRY → FLAG EMOJI
+// ═══════════════════════════════════════
+const countryFlagMap = {
+  'China': '🇨🇳', 'Russia': '🇷🇺', 'United States': '🇺🇸',
+  'Netherlands': '🇳🇱', 'Germany': '🇩🇪', 'Brazil': '🇧🇷',
+  'India': '🇮🇳', 'South Korea': '🇰🇷', 'France': '🇫🇷',
+  'Vietnam': '🇻🇳', 'Iran': '🇮🇷', 'Ukraine': '🇺🇦',
+  'Turkey': '🇹🇷', 'Indonesia': '🇮🇩', 'Taiwan': '🇹🇼',
+};
+
+function getFlagEmoji(country) {
+  return countryFlagMap[country] || '🌐';
+}
+</script>
+</body>
+</html>
