@@ -1,76 +1,96 @@
-<!-- ========================================================= -->
-<!--                 GLOBAL CYBER ATTACK MAP                   -->
-<!-- ========================================================= -->
+# CyberWatch — Live Cyber Attack Visualization Dashboard
 
-
-
-<h1 align="center">🌍 Global Cyber Attack Visualization Platform</h1>
-
-<p align="center">
-  Real-Time Cyber Threat Intelligence Dashboard Powered by Live Honeypot Data
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Honeypot-T--Pot-red?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Frontend-MapLibre-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Security-Hardened-critical?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Deployment-Vercel-black?style=for-the-badge&logo=vercel"/>
-</p>
+A real-time honeypot attack visualization dashboard that simulates T-Pot honeypot logs
+and displays global threats on an interactive world map. Built for academic/demo purposes.
 
 ---
 
-# 📖 Project Overview
+## Features
 
-The modern internet is continuously targeted by automated scanners, brute-force tools, and malicious actors. Within minutes of connecting a system to the internet, it begins receiving probing traffic.
-
-This project presents a **real-time global cyber attack visualization system** that:
-
-- Captures live attack telemetry using a honeypot
-- Streams structured event data securely
-- Visualizes global attacks on an animated interactive map
-- Provides immersive, real-time threat awareness
-
----
-
-# 🖼 Dashboard Preview
-
-<img width="1296" height="922" alt="image" src="https://github.com/user-attachments/assets/6a88dc0f-ec03-41b4-bcfe-bf173de3c98d" />
-
+- 🗺️  **Live animated attack arcs** on a dark world map (Leaflet.js + OpenStreetMap, 100% free)
+- 🌍  **Geolocation** — real-world IP ranges mapped to 15 countries
+- 📊  **Country leaderboard** with live bar charts
+- 🔴  **Attack type classifier** — 14 attack types (SSH Brute Force, SQL Injection, SMB Exploit, etc.)
+- 📡  **4 simulated honeypot services** — Cowrie, Dionaea, Glastopf, Honeytrap
+- 🔊  **Sound alerts** for CRITICAL/HIGH severity attacks
+- ⚡  **WebSocket real-time updates** via Socket.IO
+- 🎨  **Professional dark UI** — IBM Plex Mono, minimal claude.ai-inspired design
 
 ---
 
-# 🎯 Problem Statement
+## Quick Start
 
-Traditional cybersecurity tools:
+### 1. Install dependencies
 
-- Display raw logs without intuitive visualization
-- Lack real-time geographic threat mapping
-- Are limited to enterprise security teams
-- Do not provide interactive threat awareness dashboards
+```bash
+pip install -r requirements.txt
+```
 
-There is a need for a system that makes global attack data:
+### 2. Run the dashboard
 
-- 🌍 Visually understandable  
-- ⚡ Real-time  
-- 📊 Interactive  
-- 🔐 Secure  
+```bash
+python app.py
+```
+
+### 3. Open in browser
+
+```
+http://localhost:5000
+```
 
 ---
 
-# 💡 Solution Architecture
+## How the Simulation Works
 
-```mermaid
-flowchart LR
-    A[Internet Attackers] --> B[T-Pot Honeypot VM]
-    B --> C[Logstash Processing Layer]
-    C --> D[Node.js Secure Backend]
-    D --> E[Cloudflare Tunnel]
-    E --> F[Frontend Visualization Interface]
+The honeypot simulator (`app.py`) generates realistic attack logs that mimic what
+T-Pot's Elasticsearch output looks like:
 
-    style A fill:#111111,stroke:#ff0040,stroke-width:2px,color:#ffffff
-    style B fill:#111111,stroke:#00ffff,stroke-width:2px,color:#ffffff
-    style C fill:#111111,stroke:#00ffff,stroke-width:2px,color:#ffffff
-    style D fill:#111111,stroke:#00ff99,stroke-width:2px,color:#ffffff
-    style E fill:#111111,stroke:#ffaa00,stroke-width:2px,color:#ffffff
-    style F fill:#111111,stroke:#ff00ff,stroke-width:2px,color:#ffffff
+- **Realistic IP ranges** from actual ISP/datacenter subnets in each country
+- **Burst patterns** — mimics scanner sweeps (short intense bursts + normal flow)
+- **Attack profiles** — port → attack type mapping (e.g. port 22 = SSH brute force)
+- **Payloads** — common real-world attack strings per attack type
+- **Weighted country distribution** — China & Russia see higher weights (matching real stats)
+
+---
+
+## Project Structure
+
+```
+cyber-dashboard/
+├── app.py              # Flask backend + attack simulator
+├── requirements.txt
+├── templates/
+│   └── index.html      # Full single-page dashboard
+└── README.md
+```
+
+---
+
+## Extending for Real T-Pot Integration
+
+To connect a real T-Pot Elasticsearch backend, replace the `simulate_attacks()`
+function with an ES query loop:
+
+```python
+from elasticsearch import Elasticsearch
+es = Elasticsearch("http://your-tpot-ip:64298", http_auth=("elastic","password"))
+
+def fetch_real_attacks():
+    res = es.search(index="logstash-*", body={"query": {"range": {"@timestamp": {"gte": "now-1m"}}}})
+    for hit in res['hits']['hits']:
+        # map fields and emit via socketio
+        pass
+```
+
+---
+
+## Tech Stack
+
+| Component     | Technology               |
+|---------------|--------------------------|
+| Backend       | Python + Flask           |
+| Real-time     | Flask-SocketIO           |
+| Map           | Leaflet.js + OpenStreetMap |
+| Arc animation | HTML5 Canvas             |
+| Sound         | Web Audio API            |
+| Fonts         | IBM Plex Mono/Sans       |
