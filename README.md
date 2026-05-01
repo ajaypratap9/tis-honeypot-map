@@ -1,84 +1,104 @@
-# CyberWatch — Live Cyber Attack Visualization Dashboard
+# CyberWatch
 
-A real-time honeypot attack visualization dashboard that simulates T-Pot honeypot logs
-and displays global threats on an interactive world map. Built for academic/demo purposes.
+> Real-Time Cyber Attack Visualization Dashboard
+
+A full-stack web application that simulates T-Pot honeypot attack logs and renders them as live animated threats on an interactive world map. Built for academic demonstration and cybersecurity education.
+
+---
+
+## Overview
+
+CyberWatch provides real-time visibility into simulated cyber attack patterns — showing attacker origins, attack types, severity levels, and live statistics through an interactive dark-themed dashboard. The backend generates realistic honeypot log data modeled after T-Pot's Elasticsearch output, making it safe to run on any personal computer without exposing real infrastructure.
 
 ---
 
 ## Features
 
-- 🗺️  **Live animated attack arcs** on a dark world map (Leaflet.js + OpenStreetMap, 100% free)
-- 🌍  **Geolocation** — real-world IP ranges mapped to 15 countries
-- 📊  **Country leaderboard** with live bar charts
-- 🔴  **Attack type classifier** — 14 attack types (SSH Brute Force, SQL Injection, SMB Exploit, etc.)
-- 📡  **4 simulated honeypot services** — Cowrie, Dionaea, Glastopf, Honeytrap
-- 🔊  **Sound alerts** for CRITICAL/HIGH severity attacks
-- ⚡  **WebSocket real-time updates** via Socket.IO
-- 🎨  **Professional dark UI** — IBM Plex Mono, minimal claude.ai-inspired design
+| Feature | Description |
+|---|---|
+| Live Attack Map | Animated attack arcs rendered on a world map using Leaflet.js and OpenStreetMap |
+| Geolocation Engine | Real ISP/datacenter IP ranges mapped to 15 countries with weighted distributions |
+| Attack Classifier | 14 attack types auto-classified by destination port and protocol |
+| Country Leaderboard | Live-ranked attacker countries with animated bar charts |
+| Honeypot Services | Simulates Cowrie, Dionaea, Glastopf, and Honeytrap with individual counters |
+| Real-Time Feed | Live attack log with IP, payload, severity, country, and timestamp |
+| Sound Alerts | Web Audio API alerts for CRITICAL and HIGH severity events |
+| WebSocket Delivery | Zero-latency push updates via Socket.IO — no polling, no page refresh |
 
 ---
 
 ## Quick Start
 
-### 1. Install dependencies
+**Prerequisites:** Python 3.9 or higher, pip
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/cyberwatch.git
+cd cyberwatch
+
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Run the dashboard
-
-```bash
+# 3. Start the server
 python app.py
 ```
 
-### 3. Open in browser
-
-```
-http://localhost:5000
-```
-
----
-
-## How the Simulation Works
-
-The honeypot simulator (`app.py`) generates realistic attack logs that mimic what
-T-Pot's Elasticsearch output looks like:
-
-- **Realistic IP ranges** from actual ISP/datacenter subnets in each country
-- **Burst patterns** — mimics scanner sweeps (short intense bursts + normal flow)
-- **Attack profiles** — port → attack type mapping (e.g. port 22 = SSH brute force)
-- **Payloads** — common real-world attack strings per attack type
-- **Weighted country distribution** — China & Russia see higher weights (matching real stats)
+Open `http://localhost:5000` in your browser.
 
 ---
 
 ## Project Structure
 
 ```
-cyber-dashboard/
-├── app.py              # Flask backend + attack simulator
-├── requirements.txt
+cyberwatch/
+├── app.py                  # Flask server + honeypot attack simulator
+├── requirements.txt        # Python dependencies
 ├── templates/
-│   └── index.html      # Full single-page dashboard
+│   └── index.html          # Single-page dashboard (map, feed, panels)
 └── README.md
 ```
 
 ---
 
-## Extending for Real T-Pot Integration
+## How the Simulator Works
 
-To connect a real T-Pot Elasticsearch backend, replace the `simulate_attacks()`
-function with an ES query loop:
+The attack simulator in `app.py` generates realistic log events that closely mimic what a live T-Pot honeypot would send to Elasticsearch. No real network exposure is required.
+
+**Traffic modeling:**
+
+- Real ISP and datacenter IP subnets from 15 countries (China, Russia, US, Netherlands, Germany, and more)
+- Weighted country distribution matching observed real-world honeypot statistics
+- Burst pattern simulation — models scanner sweeps with short high-frequency bursts mixed into normal background traffic
+- Port-to-attack-type mapping (e.g. `:22 TCP` → SSH Brute Force, `:3389 TCP` → RDP Brute Force, `:445 TCP` → SMB Exploit)
+- Real-world payload strings per attack type (credential pairs, SQL strings, directory paths, exploit names)
+
+---
+
+## Connecting to a Real T-Pot Instance
+
+To replace the simulator with live data from a T-Pot deployment on Oracle Cloud or any VPS, swap the `simulate_attacks()` function with an Elasticsearch polling loop:
 
 ```python
 from elasticsearch import Elasticsearch
-es = Elasticsearch("http://your-tpot-ip:64298", http_auth=("elastic","password"))
+
+es = Elasticsearch(
+    "http://your-tpot-ip:64298",
+    http_auth=("elastic", "changeme")
+)
 
 def fetch_real_attacks():
-    res = es.search(index="logstash-*", body={"query": {"range": {"@timestamp": {"gte": "now-1m"}}}})
-    for hit in res['hits']['hits']:
-        # map fields and emit via socketio
+    res = es.search(
+        index="logstash-*",
+        body={
+            "query": {
+                "range": {
+                    "@timestamp": {"gte": "now-1m"}
+                }
+            }
+        }
+    )
+    for hit in res["hits"]["hits"]:
+        # Map T-Pot fields to CyberWatch attack schema and emit via socketio
         pass
 ```
 
@@ -86,11 +106,39 @@ def fetch_real_attacks():
 
 ## Tech Stack
 
-| Component     | Technology               |
-|---------------|--------------------------|
-| Backend       | Python + Flask           |
-| Real-time     | Flask-SocketIO           |
-| Map           | Leaflet.js + OpenStreetMap |
-| Arc animation | HTML5 Canvas             |
-| Sound         | Web Audio API            |
-| Fonts         | IBM Plex Mono/Sans       |
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.9, Flask 3.0 |
+| Real-time Transport | Flask-SocketIO 5.3, Socket.IO 4.7 |
+| Map Rendering | Leaflet.js 1.9, OpenStreetMap (no API key required) |
+| Attack Arc Animation | HTML5 Canvas API |
+| Sound Alerts | Web Audio API |
+| Typography | IBM Plex Mono, IBM Plex Sans |
+
+---
+
+## Requirements
+
+```
+flask>=3.0.0
+flask-socketio>=5.3.6
+eventlet>=0.35.2
+```
+
+---
+
+## Team
+
+| Name | Role |
+|---|---|
+| Ajay Pratap Singh | Core Architecture & System Design |
+| Abhay Pratap Singh | Backend Simulation & Map Integration |
+| Akshay Pratap Singh | Frontend Development & Research |
+| Dev Kumar | Frontend Development & Research |
+| Shritika | UI/UX & Interface Design |
+
+---
+
+## License
+
+This project is built for academic purposes. Not intended for use in production environments or against real systems.
