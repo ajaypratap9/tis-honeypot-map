@@ -34,7 +34,7 @@ CyberWatch provides real-time visibility into simulated cyber attack patterns â€
 ```bash
 # 1. Clone the repository
 git clone https://github.com/ajaypratap9/tis-honeypot-map
-cd cyberwatch
+cd tis-honeypot-map
 
 # 2. Install dependencies
 pip install -r requirements.txt
